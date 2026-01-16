@@ -109,6 +109,24 @@ module.exports = {
                         flags: MessageFlags.IsComponentsV2
                     });
 
+                    // Notify mail channel about new modmail
+                    const notificationSection = new SectionBuilder()
+                        .addTextDisplayComponents(
+                            (text) => text.setContent(`### 📩 New Modmail Opened`),
+                            (text) => text.setContent(`**User:** ${message.author} (\`${message.author.id}\`)\n**Thread:** ${thread}\n**Opened:** <t:${Math.floor(Date.now() / 1000)}:R>`)
+                        )
+                        .setButtonAccessory((button) =>
+                            button
+                                .setLabel('View Thread')
+                                .setStyle(ButtonStyle.Link)
+                                .setURL(`https://discord.com/channels/${guildId}/${thread.id}`)
+                        );
+
+                    await mailChannel.send({
+                        components: [notificationSection],
+                        flags: MessageFlags.IsComponentsV2
+                    });
+
                 } catch (error) {
                     console.error("Error creating thread:", error);
                     return message.reply("❌ Error creating ticket. Please contact an admin directly.");
