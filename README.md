@@ -84,8 +84,8 @@ We actively monitor and protect our intellectual property rights. Violations of 
 
 1. **Clone the Repository**
    ```bash
-   git clone https://github.com/AshhLattee/modmail-bot.git
-   cd modmail-bot
+   git clone https://github.com/AshhLattee/AshhLattee-ModMail.git
+   cd AshhLattee-ModMail
    ```
 
 2. **Install Dependencies**
