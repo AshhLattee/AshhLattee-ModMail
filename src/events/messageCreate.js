@@ -1,4 +1,4 @@
-const { Events, ChannelType, ThreadAutoArchiveDuration, EmbedBuilder } = require('discord.js');
+const { Events, ChannelType, ThreadAutoArchiveDuration, EmbedBuilder, SectionBuilder, ButtonStyle, MessageFlags, ComponentType } = require('discord.js');
 
 module.exports = {
     name: Events.MessageCreate,
@@ -54,14 +54,25 @@ module.exports = {
                         reason: `New modmail from ${message.author.tag}`
                     });
 
-                    // New Ticket Embed
-                    const newTicketEmbed = new EmbedBuilder()
-                        .setTitle('📨 New Modmail Ticket')
-                        .setDescription(`**User:** ${message.author} (\`${message.author.id}\`)\n**Created:** <t:${Math.floor(Date.now() / 1000)}:R>`)
-                        .setColor(0x0099FF) // Blue
-                        .setThumbnail(message.author.displayAvatarURL());
+                    // New Ticket UI using SectionBuilder (Components V2)
+                    const ticketSection = new SectionBuilder()
+                        .addTextDisplayComponents(
+                            (text) => text.setContent(`### 📨 New Modmail Ticket Created`),
+                            (text) => text.setContent(`**User:** ${message.author} (\`${message.author.id}\`)\n**Created:** <t:${Math.floor(Date.now() / 1000)}:R>`)
+                        )
+                        .setButtonAccessory((button) =>
+                            button
+                                .setCustomId('close_ticket')
+                                .setLabel('Close Ticket')
+                                .setStyle(ButtonStyle.Danger)
+                                .setEmoji({ name: '🔒' })
+                        );
 
-                    await thread.send({ embeds: [newTicketEmbed] });
+                    await thread.send({
+                        components: [ticketSection],
+                        flags: MessageFlags.IsComponentsV2
+                    });
+
                 } catch (error) {
                     console.error("Error creating thread:", error);
                     return message.reply("❌ Error creating ticket. Please contact an admin directly.");
