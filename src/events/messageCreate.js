@@ -1,5 +1,8 @@
 const { Events, ChannelType, ThreadAutoArchiveDuration, EmbedBuilder, SectionBuilder, ButtonStyle, MessageFlags, ComponentType } = require('discord.js');
 
+// Lock Set to prevent race conditions on thread creation
+const creatingThread = new Set();
+
 module.exports = {
     name: Events.MessageCreate,
     async execute(message) {
@@ -21,22 +24,25 @@ module.exports = {
             if (!mailChannel) return console.error(`Mail channel ${mailChannelId} not found`);
 
             // Check for existing thread
-            // We search active threads for one that ends with the User ID
-            let thread = mailChannel.threads.cache.find(t => t.name.endsWith(message.author.id));
+            // We search for a thread that is NOT locked (closed)
+            let thread = mailChannel.threads.cache.find(t => t.name.endsWith(message.author.id) && !t.locked);
 
             if (!thread) {
                 // Try fetching active threads if not in cache
                 const activeThreads = await mailChannel.threads.fetchActive();
-                thread = activeThreads.threads.find(t => t.name.endsWith(message.author.id));
+                thread = activeThreads.threads.find(t => t.name.endsWith(message.author.id) && !t.locked);
+            }
+
+            // RE-CHECK CACHE: A concurrent request might have finished creating the thread while we were awaiting fetchActive.
+            if (!thread) {
+                thread = mailChannel.threads.cache.find(t => t.name.endsWith(message.author.id) && !t.locked);
             }
 
             if (!thread) {
-                // Try fetching archived threads (might be expensive, but needed if thread was auto-archived)
-                // NOTE: fetching archived threads requires history, we might skip this optimization for simplicity 
-                // and just create a new one or assuming we don't spam. 
-                // For now, let's keep it simple: if not found in active, create new. 
-                // Better: Try to find by name "ticket-username" if topic lookup adds complexity? 
-                // Topic is safer for name changes.
+                // LOCK CHECK: If we are already creating a thread for this user, stop.
+                if (creatingThread.has(message.author.id)) return;
+
+                creatingThread.add(message.author.id);
 
                 // Create new thread
                 try {
@@ -86,6 +92,8 @@ module.exports = {
                 } catch (error) {
                     console.error("Error creating thread:", error);
                     return message.reply("❌ Error creating ticket. Please contact an admin directly.");
+                } finally {
+                    creatingThread.delete(message.author.id);
                 }
             }
 
@@ -112,7 +120,8 @@ module.exports = {
             // User Message using SectionBuilder
             const userSection = new SectionBuilder()
                 .addTextDisplayComponents(
-                    (text) => text.setContent(content)
+                    (text) => text.setContent(content),
+                    (text) => text.setContent(`-# Sent by **${message.author.username}**`)
                 )
                 .setThumbnailAccessory((thumbnail) =>
                     thumbnail.setURL(message.author.displayAvatarURL({ extension: 'png' }))
@@ -157,21 +166,23 @@ module.exports = {
                 const content = message.content || "";
                 const files = message.attachments.map(a => a.url);
 
-                // Staff Reply Embed
-                const staffEmbed = new EmbedBuilder()
-                    .setAuthor({ name: message.guild.name, iconURL: message.guild.iconURL() })
-                    .setDescription(content)
-                    .setColor(0xEB459E) // Blurple/Pinkish
-                    .setFooter({ text: `Staff: ${message.author.username}` }) // Show staff name in footer
-                    .setTimestamp();
-
-                if (files.length > 0) {
-                    staffEmbed.setImage(files[0]);
-                    if (files.length > 1) staffEmbed.addFields({ name: 'Attachments', value: files.join('\n') });
-                }
+                // Staff Reply using SectionBuilder
+                const staffSection = new SectionBuilder()
+                    .addTextDisplayComponents(
+                        (text) => text.setContent(content),
+                        (text) => text.setContent(`-# Sent by **${message.author.username}** (Staff)`)
+                    )
+                    .setThumbnailAccessory((thumbnail) =>
+                        thumbnail.setURL(message.guild.iconURL({ extension: 'png' }) || '')
+                            .setDescription('Server Icon')
+                    );
 
                 // Send DM
-                await user.send({ embeds: [staffEmbed] });
+                await user.send({
+                    components: [staffSection],
+                    files: files.length > 0 ? files : [],
+                    flags: MessageFlags.IsComponentsV2
+                });
                 // await message.react('✅'); // Optional: confirm sent
             } catch (error) {
                 console.error("Error replying to user:", error);

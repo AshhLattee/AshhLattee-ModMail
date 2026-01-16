@@ -6,7 +6,13 @@ module.exports = {
         if (!interaction.isButton()) return;
 
         if (interaction.customId === 'close_ticket') {
-            await interaction.deferReply(); // Acknowledge
+            try {
+                await interaction.deferReply();
+            } catch (err) {
+                if (err.code === 10062) return; // Unknown interaction (already handled/expired), ignore
+                console.error("Interaction defer error:", err);
+                return;
+            }
 
             // Verify logic (similar to close command)
             const parts = interaction.channel.name.split('-');
