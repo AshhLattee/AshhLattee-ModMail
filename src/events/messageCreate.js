@@ -55,10 +55,20 @@ module.exports = {
                     });
 
                     // New Ticket UI using SectionBuilder (Components V2)
-                    const ticketSection = new SectionBuilder()
+                    const ticketInfoSection = new SectionBuilder()
                         .addTextDisplayComponents(
-                            (text) => text.setContent(`### 📨 New Modmail Ticket Created`),
+                            (text) => text.setContent(`### 📨 New Modmail Ticket`),
                             (text) => text.setContent(`**User:** ${message.author} (\`${message.author.id}\`)\n**Created:** <t:${Math.floor(Date.now() / 1000)}:R>`)
+                        )
+                        .setThumbnailAccessory((thumbnail) =>
+                            thumbnail
+                                .setURL(message.author.displayAvatarURL({ extension: 'png' }))
+                                .setDescription('User Avatar')
+                        );
+
+                    const ticketControlSection = new SectionBuilder()
+                        .addTextDisplayComponents(
+                            (text) => text.setContent('**Ticket Controls**')
                         )
                         .setButtonAccessory((button) =>
                             button
@@ -69,7 +79,7 @@ module.exports = {
                         );
 
                     await thread.send({
-                        components: [ticketSection],
+                        components: [ticketInfoSection, ticketControlSection],
                         flags: MessageFlags.IsComponentsV2
                     });
 
@@ -99,22 +109,27 @@ module.exports = {
 
             const files = message.attachments.map(a => a.url);
 
-            // User Message Embed
-            const userEmbed = new EmbedBuilder()
-                .setAuthor({ name: message.author.tag, iconURL: message.author.displayAvatarURL() })
-                .setDescription(content)
-                .setColor(0x57F287) // Greenish
-                .setFooter({ text: 'User Message' })
-                .setTimestamp();
+            // User Message using SectionBuilder
+            const userSection = new SectionBuilder()
+                .addTextDisplayComponents(
+                    (text) => text.setContent(content)
+                )
+                .setThumbnailAccessory((thumbnail) =>
+                    thumbnail.setURL(message.author.displayAvatarURL({ extension: 'png' }))
+                        .setDescription('User Avatar')
+                );
 
-            if (files.length > 0) {
-                userEmbed.setImage(files[0]); // Display first image if present
-                if (files.length > 1) userEmbed.addFields({ name: 'Attachments', value: files.join('\n') });
-            }
+            // Add separate text component for attachments if present, as SectionBuilder text is limited? 
+            // Actually SectionBuilder handles text. If there are attachments, we just pass them as files.
+            // But we might want to mention them in text if it's empty.
 
             try {
-                await thread.send({ embeds: [userEmbed] });
-                await message.react('✅'); // Confirm receipt
+                await thread.send({
+                    components: [userSection],
+                    files: files.length > 0 ? files : [],
+                    flags: MessageFlags.IsComponentsV2
+                });
+                await message.react('✅');
             } catch (error) {
                 console.error("Error forwarding to thread:", error);
                 message.reply("❌ Failed to send message.");
