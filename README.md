@@ -1,63 +1,69 @@
 # 📨 Discord Modmail Bot
 
-A lightweight, database-free Modmail bot for Discord.
-It uses **Discord Threads** to manage support tickets, keeping your server clean and simple.
+A professionally designed, database-free Modmail solution for Discord communities. This application leverages **Discord Threads** to offer a streamlined, efficient support ticket system that maintains server organization without the need for external database infrastructure.
 
 ---
 
-## ⚠️ CRITICAL LICENSE NOTICE ⚠️
+## ⚖️ Licensing & Usage Restrictions
 
-**LISTEN UP.**
+This project is released under the **Apache License 2.0**, modified with the **Commons Clause**.
 
-This project is licensed under the **Apache License 2.0 with Commons Clause**.
+### 🚫 Commercial Use Prohibited
+**The sale, resale, or commercial distribution of this software is strictly prohibited.**
 
-# 🛑 DO NOT SELL THIS BOT.
-**You are STRICTLY PROHIBITED from selling this software, reselling it, renting it, or including it in any paid service or product.**
-This code is free for personal use. If you try to make money off my work, **you are violating the license.**
+By accessing, downloading, or using this software, you acknowledge and agree that:
+1.  **No Commercial Distribution**: You may not sell, rent, lease, or sublicense this software.
+2.  **No Paid Services**: You may not include this software as part of a paid service, hosting package, or premium feature set.
+3.  **Personal & Internal Use Only**: Usage is permitted for personal, extensive, or internal business purposes, provided no fees are charged for the software itself.
 
-### ⚖️ ENFORCEMENT & CONSEQUENCES
-**Violation of these terms will result in:**
-1.  **Immediate DMCA Takedown**: Your repository, website, or service will be taken down.
-2.  **Cease & Desist Order**: Legal action will be initiated to stop your unauthorized use.
-3.  **Public Wall of Shame**: We will publicly expose any attempts to resell this free work.
+### 🛡️ Enforcement Policy
+We actively monitor and protect our intellectual property rights. Violations of the license terms will be met with immediate and decisive action, including but not limited to:
+*   **DMCA Takedown Notices**: Immediate removal of infringing repositories or hosted instances.
+*   **Legal Action**: Issuance of Cease & Desist orders and potential pursuit of damages.
+*   **Public Disclosure**: Documented instances of license violation may be publicly listed.
 
-**We protect our intellectual property aggressively.** Don't test us.
+**License**: Apache License 2.0 + Commons Clause.
 
 ---
 
-## 👤 Credits
+## 👤 Author & Credits
 
-**Created by: Ashhlattee**
+**Developed by: Ashhlattee**
+
 *   **Discord**: Ashhlattee
 *   **GitHub**: [Ashhlattee](https://github.com/AshhLattee)
 
-Please Star the Repo ⭐
+*If you find this project useful, please consider starring the repository.* ⭐
 
-> **🤖 AI Augmented Engineer**
-> This project was built by an **AI Augmented Engineer** leveraging advanced Artificial Intelligence to generate high-quality, efficient code.
+> **🤖 AI Augmented Engineering**
+> This project was architected and implemented by an **AI Augmented Engineer**, utilizing advanced Artificial Intelligence to ensure high-quality, maintainable, and efficient code standards.
 
 ---
 
-## Features
-*   **Database Free**: Uses Thread Names to store user data.
-*   **Clean UI**: Beautiful Embeds for all interactions.
-*   **Standard Logic**: DM the bot to open a ticket, Reply in the thread to talk back.
+## ✨ Key Features
 
-## 🚀 Setup
+*   **Zero-Database Architecture**: Utilizes Discord's native Thread naming conventions for persistent state management, eliminating external dependencies.
+*   **Professional UI/UX**: Features standardized, aesthetically pleasing Rich Embeds for all user and staff interactions.
+*   **Intuitive Workflow**: Seamlessly bridges Direct Messages to Server Threads, offering a familiar experience for both users and moderation staff.
+*   **Command Suite**: Includes staff-side Slash Commands (`/close`) and user-side DM commands (`!close`) for full lifecycle management.
 
-1.  **Clone the repo**
-2.  **Install dependencies**:
+## 🚀 Installation & Configuration
+
+1.  **Clone the Repository**
+2.  **Install Dependencies**
+    Execute the following command to install required packages:
     ```bash
     npm install
     ```
-3.  **Configure**:
-    Rename `.env.example` to `.env` and fill in:
+3.  **Environment Configuration**
+    Create a `.env` file based on the provided `.env.example` and populate the necessary credentials:
     ```env
-    DISCORD_TOKEN=your_bot_token
-    GUILD_ID=your_server_id
-    MAIL_CHANNEL_ID=channel_id_where_tickets_appear
+    DISCORD_TOKEN=your_bot_token_here
+    GUILD_ID=your_server_id_here
+    MAIL_CHANNEL_ID=your_modmail_channel_id_here
     ```
-4.  **Run**:
+4.  **Launch Application**
+    Start the bot instance:
     ```bash
     npm start
     ```
