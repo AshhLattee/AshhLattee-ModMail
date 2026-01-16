@@ -1,4 +1,5 @@
 const { Events } = require('discord.js');
+const { getUserIdFromThread } = require('../utils');
 
 module.exports = {
     name: Events.InteractionCreate,
@@ -15,28 +16,32 @@ module.exports = {
             }
 
             // Verify logic (similar to close command)
-            const parts = interaction.channel.name.split('-');
-            const userId = parts[parts.length - 1];
+            const userId = await getUserIdFromThread(interaction.channel);
 
-            if (!/^\d{17,20}$/.test(userId)) {
-                return interaction.followUp({ content: '❌ Could not find user ID from thread name.', ephemeral: true });
+            if (!userId) {
+                return interaction.followUp({ content: '❌ Could not find user ID from thread.', ephemeral: true });
             }
 
             // Close logic
             try {
-                // Determine if interaction is from Staff or User (though button is only in thread for now)
-                const isStaff = !interaction.user.bot; // For now assuming anyone clicking in thread is staff
-
                 // Notify User
                 const client = interaction.client;
+                let username = "Unknown";
                 try {
                     const user = await client.users.fetch(userId);
-                    await user.send('**Ticket Closed**\nYour ticket has been closed via the dashboard button.');
+                    username = user.username;
+                    await user.send('**Modmail Closed**\nYour modmail has been closed by staff.');
                 } catch (err) {
                     console.log('Could not DM user', err);
                 }
 
-                await interaction.followUp('🔒 Button clicked: Closing ticket...');
+                await interaction.followUp('🔒 Button clicked: Closing Modmail...');
+
+                // Rename to indicate finished
+                if (username !== "Unknown") {
+                    await interaction.channel.setName(`✔・${username}`);
+                }
+
                 await interaction.channel.setLocked(true);
                 await interaction.channel.setArchived(true);
 

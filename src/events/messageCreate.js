@@ -1,4 +1,5 @@
 const { Events, ChannelType, ThreadAutoArchiveDuration, EmbedBuilder, SectionBuilder, ButtonStyle, MessageFlags, ComponentType } = require('discord.js');
+const { getUserIdFromThread } = require('../utils');
 
 // Lock Set to prevent race conditions on thread creation
 const creatingThread = new Set();
@@ -25,17 +26,19 @@ module.exports = {
 
             // Check for existing thread
             // We search for a thread that is NOT locked (closed)
-            let thread = mailChannel.threads.cache.find(t => t.name.endsWith(message.author.id) && !t.locked);
+            // Name format: 📨・username
+            const targetName = `📨・${message.author.username}`;
+            let thread = mailChannel.threads.cache.find(t => t.name === targetName && !t.locked);
 
             if (!thread) {
                 // Try fetching active threads if not in cache
                 const activeThreads = await mailChannel.threads.fetchActive();
-                thread = activeThreads.threads.find(t => t.name.endsWith(message.author.id) && !t.locked);
+                thread = activeThreads.threads.find(t => t.name === targetName && !t.locked);
             }
 
             // RE-CHECK CACHE: A concurrent request might have finished creating the thread while we were awaiting fetchActive.
             if (!thread) {
-                thread = mailChannel.threads.cache.find(t => t.name.endsWith(message.author.id) && !t.locked);
+                thread = mailChannel.threads.cache.find(t => t.name === targetName && !t.locked);
             }
 
             if (!thread) {
@@ -46,24 +49,18 @@ module.exports = {
 
                 // Create new thread
                 try {
-                    // Format: modmail-username-userid
-                    // Limit username length to avoid >100 limitation
-                    const safeUsername = message.author.username.slice(0, 50);
+                    const threadName = `📨・${message.author.username}`;
                     thread = await mailChannel.threads.create({
-                        name: `modmail-${safeUsername}-${message.author.id}`,
+                        name: threadName,
                         autoArchiveDuration: ThreadAutoArchiveDuration.OneWeek,
-                        // Private threads require level 2 boost for non-moderators to see? 
-                        // Actually, Private Threads are free now but logic differs.
-                        // "GUILD_PRIVATE_THREAD" requires 'Create Private Threads'.
-                        // If standard channel, Type: PrivateThread
                         type: ChannelType.PrivateThread,
                         reason: `New modmail from ${message.author.tag}`
                     });
 
-                    // New Ticket UI using SectionBuilder (Components V2)
+                    // New Modmail UI using SectionBuilder
                     const ticketInfoSection = new SectionBuilder()
                         .addTextDisplayComponents(
-                            (text) => text.setContent(`### 📨 New Modmail Ticket`),
+                            (text) => text.setContent(`### 📨 New Modmail`),
                             (text) => text.setContent(`**User:** ${message.author} (\`${message.author.id}\`)\n**Created:** <t:${Math.floor(Date.now() / 1000)}:R>`)
                         )
                         .setThumbnailAccessory((thumbnail) =>
@@ -74,18 +71,41 @@ module.exports = {
 
                     const ticketControlSection = new SectionBuilder()
                         .addTextDisplayComponents(
-                            (text) => text.setContent('**Ticket Controls**')
+                            (text) => text.setContent('**Modmail Controls**')
                         )
                         .setButtonAccessory((button) =>
                             button
                                 .setCustomId('close_ticket')
-                                .setLabel('Close Ticket')
+                                .setLabel('Close Modmail')
                                 .setStyle(ButtonStyle.Danger)
                                 .setEmoji({ name: '🔒' })
                         );
 
+                    // Hidden ID component for robust retrieval
+                    const { TextDisplayBuilder } = require('discord.js');
+                    const hiddenIdComponent = new TextDisplayBuilder()
+                        .setContent(`-# ||${message.author.id}||`);
+
                     await thread.send({
-                        components: [ticketInfoSection, ticketControlSection],
+                        components: [ticketInfoSection, ticketControlSection, hiddenIdComponent],
+                        flags: MessageFlags.IsComponentsV2
+                    });
+
+                    // Send greeting message to user
+                    const greetingSection = new SectionBuilder()
+                        .addTextDisplayComponents(
+                            (text) => text.setContent(`### 📬 Modmail Received`),
+                            (text) => text.setContent(`Hey **${message.author.username}**! Your message has been received.\n\nOur staff will respond as soon as possible. Please be patient and provide any additional details if needed.`),
+                            (text) => text.setContent(`-# Powered by **Modmail**`)
+                        )
+                        .setThumbnailAccessory((thumbnail) =>
+                            thumbnail
+                                .setURL(message.guild?.iconURL({ extension: 'png' }) || client.user.displayAvatarURL({ extension: 'png' }))
+                                .setDescription('Server Icon')
+                        );
+
+                    await message.author.send({
+                        components: [greetingSection],
                         flags: MessageFlags.IsComponentsV2
                     });
 
@@ -152,16 +172,17 @@ module.exports = {
             // Check if this thread belongs to mail channel
             if (message.channel.parentId !== mailChannelId) return;
 
-            // Get User ID from Thread Name
-            // Format: modmail-username-userid
-            const parts = message.channel.name.split('-');
-            const userId = parts[parts.length - 1]; // Last part is always ID
-
-            // Basic validation that it looks like an ID (snowflakes are ~18-19 digits)
-            if (!/^\d{17,20}$/.test(userId)) return;
+            // Get User ID from Thread
+            const userId = await getUserIdFromThread(message.channel);
+            console.log(`[DEBUG] Staff reply in thread ${message.channel.name}, found userId: ${userId}`);
+            if (!userId) {
+                console.log('[DEBUG] Could not find userId, ignoring message');
+                return;
+            }
 
             try {
                 const user = await client.users.fetch(userId);
+                console.log(`[DEBUG] Sending reply to user: ${user.tag}`);
 
                 const content = message.content || "";
                 const files = message.attachments.map(a => a.url);

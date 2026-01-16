@@ -1,31 +1,33 @@
 const { SlashCommandBuilder } = require('discord.js');
+const { getUserIdFromThread } = require('../utils');
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('close')
-        .setDescription('Closes the current modmail ticket'),
+        .setDescription('Closes the current modmail'),
     async execute(interaction) {
         // Check if inside a thread
         if (!interaction.channel.isThread()) {
-            return interaction.reply({ content: 'This command can only be used in a ticket thread.', ephemeral: true });
+            return interaction.reply({ content: 'This command can only be used in a modmail thread.', ephemeral: true });
         }
 
-        const parts = interaction.channel.name.split('-');
-        const userId = parts[parts.length - 1];
+        const userId = await getUserIdFromThread(interaction.channel);
 
         // Basic validation
-        if (!/^\d{17,20}$/.test(userId)) {
-            return interaction.reply({ content: 'This thread does not seem to contain a valid User ID in the name.', ephemeral: true });
+        if (!userId) {
+            return interaction.reply({ content: '❌ Could not find user ID from thread.', ephemeral: true });
         }
 
         const client = interaction.client;
 
-        await interaction.reply('🔒 Closing ticket...');
+        await interaction.reply('🔒 Closing Modmail...');
 
         // Notify User
+        let username = "Unknown";
         try {
             const user = await client.users.fetch(userId);
-            await user.send('**Ticket Closed**\nYour support ticket has been closed by staff. If you need further assistance, please reply to create a new ticket.');
+            username = user.username;
+            await user.send('**Modmail Closed**\nYour modmail has been closed by staff. If you need further assistance, please reply to create a new modmail.');
         } catch (error) {
             console.error('Could not DM user on close:', error);
             await interaction.followUp({ content: '⚠️ Could not notify user (DMs off?), but closing anyway.', ephemeral: true });
@@ -33,6 +35,11 @@ module.exports = {
 
         // Archive/Lock Thread
         try {
+            // Rename to indicate finished
+            if (username !== "Unknown") {
+                await interaction.channel.setName(`✔・${username}`);
+            }
+
             await interaction.channel.setLocked(true);
             await interaction.channel.setArchived(true);
         } catch (error) {
