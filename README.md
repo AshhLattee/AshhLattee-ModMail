@@ -1,5 +1,13 @@
 # 📨 Discord Modmail Bot
 
+> [!NOTE]
+> **A Personal Note from AshhLattee**
+> After 6 years of pouring my heart into code, I've decided to close this chapter and retire from development. It's been an incredible journey, and I'm deeply grateful for everyone who has been a part of it. My focus has now shifted towards the world of Minecraft, where I'm finding new ways to create.
+>
+> While I’m stepping away and this project will no longer be maintained, it is **not** retired—it remains here for you to use, fork, and build upon. Development has stopped, but the work remains for the community. Thank you for being part of my story. 🌙
+>
+> For the full journey, feel free to visit my [GitHub profile](https://github.com/AshhLattee).
+
 A professionally engineered, database-free Modmail solution for Discord communities. This application leverages **Discord Threads** and **Components V2** to deliver a modern, efficient support ticket system without external database dependencies.
 
 ---
@@ -45,29 +53,29 @@ We actively monitor and protect our intellectual property rights. Violations of 
 
 **Developed by: Ashhlattee**
 
-| Platform | Link |
-|----------|------|
-| Discord  | `Ashhlattee` |
+| Platform | Link                                        |
+| -------- | ------------------------------------------- |
+| Discord  | `Ashhlattee`                                |
 | GitHub   | [Ashhlattee](https://github.com/AshhLattee) |
 
 > **🤖 AI Augmented Engineering**  
 > This project was architected and implemented by an **AI Augmented Engineer**, utilizing advanced Artificial Intelligence to ensure high-quality, maintainable, and efficient code standards.
 
-*If you find this project useful, please consider starring the repository.* ⭐
+_If you find this project useful, please consider starring the repository._ ⭐
 
 ---
 
 ## ✨ Key Features
 
-| Feature | Description |
-|---------|-------------|
+| Feature                        | Description                                                                                                 |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------- |
 | **Zero-Database Architecture** | Utilizes Discord's native Thread system for persistent state management, eliminating external dependencies. |
-| **Modern UI/UX** | Features Discord Components V2 (Sections, Buttons) for a polished, interactive experience. |
-| **Automatic Greeting** | Sends a personalized welcome message to users upon opening a Modmail. |
-| **Channel Notifications** | Posts an alert to the mail channel with a direct link when a new thread is created. |
-| **Intuitive Workflow** | Seamlessly bridges Direct Messages to Server Threads for both users and staff. |
-| **Command Suite** | Staff-side Slash Commands (`/close`) and user-side DM commands (`!close`). |
-| **Aesthetic Thread Names** | Uses `📨・username` for open and `✔・username` for closed threads. |
+| **Modern UI/UX**               | Features Discord Components V2 (Sections, Buttons) for a polished, interactive experience.                  |
+| **Automatic Greeting**         | Sends a personalized welcome message to users upon opening a Modmail.                                       |
+| **Channel Notifications**      | Posts an alert to the mail channel with a direct link when a new thread is created.                         |
+| **Intuitive Workflow**         | Seamlessly bridges Direct Messages to Server Threads for both users and staff.                              |
+| **Command Suite**              | Staff-side Slash Commands (`/close`) and user-side DM commands (`!close`).                                  |
+| **Aesthetic Thread Names**     | Uses `📨・username` for open and `✔・username` for closed threads.                                          |
 
 ---
 
@@ -83,18 +91,21 @@ We actively monitor and protect our intellectual property rights. Violations of 
 ### Steps
 
 1. **Clone the Repository**
+
    ```bash
    git clone https://github.com/AshhLattee/AshhLattee-ModMail.git
    cd AshhLattee-ModMail
    ```
 
 2. **Install Dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Configure Environment**  
    Create a `.env` file based on `.env.example`:
+
    ```env
    DISCORD_TOKEN=your_bot_token_here
    GUILD_ID=your_server_id_here
@@ -111,10 +122,12 @@ We actively monitor and protect our intellectual property rights. Violations of 
 ## 📖 Usage
 
 ### For Users
+
 - **Open a Modmail**: Send a Direct Message to the bot.
 - **Close a Modmail**: Reply with `!close` in your DM conversation.
 
 ### For Staff
+
 - **View Modmails**: Check the designated mail channel for notifications and thread links.
 - **Reply to Users**: Simply type in the modmail thread; messages are forwarded automatically.
 - **Close a Modmail**: Use the `/close` command or click the "🔒 Close Modmail" button.
