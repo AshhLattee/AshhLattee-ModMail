@@ -1,7 +1,7 @@
 # 📨 Discord Modmail Bot
 
 > [!NOTE]
-> **A Personal Note from AshhLattee**
+> **A Personal Note from FernLives**
 > After 6 years of pouring my heart into code, I've decided to close this chapter and retire from development. It's been an incredible journey, and I'm deeply grateful for everyone who has been a part of it. I'm now looking forward to finding new ways to create and explore.
 >
 > While I’m stepping away and this project will no longer be maintained, it is **not** retired—it remains here for you to use, fork, and build upon. Development has stopped, but the work remains for the community. Thank you for being part of my story. 🌙
